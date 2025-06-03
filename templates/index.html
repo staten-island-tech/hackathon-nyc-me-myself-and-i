@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NYC Subway Simulation</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="map-container">
+        <img src="/static/subway_map.png" class="map" alt="NYC Subway Map">
+        {% for train_id, pos in trains.items() %}
+            <img 
+                src="/static/train.png"
+                class="train" 
+                id="train-{{ train_id }}"
+                data-train="{{ train_id }}"
+                style="left: {{ pos.x }}px; top: {{ pos.y }}px;"
+                draggable="true"
+            >
+        {% endfor %}
+    </div>
+
+    <script>
+        document.querySelectorAll('.train').forEach(train => {
+            train.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData("train-id", train.dataset.train);
+            });
+        });
+
+        const map = document.querySelector('.map-container');
+        map.addEventListener('dragover', (e) => e.preventDefault());
+        map.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const trainId = e.dataTransfer.getData("train-id");
+            const trainEl = document.querySelector(`#train-${trainId}`);
+            const rect = map.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            trainEl.style.left = `${x}px`;
+            trainEl.style.top = `${y}px`;
+
+            fetch("/update_train_position", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ train_id: trainId, x, y })
+            });
+        });
+    </script>
+</body>
+</html>
