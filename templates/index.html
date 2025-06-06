@@ -1,50 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>NYC Subway Simulation</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>NY Museum Explorer</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 2em; background: #f4f4f4; }
+        .card { background: white; padding: 1.5em; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
+        img { max-width: 100%; border-radius: 10px; }
+    </style>
 </head>
 <body>
-    <div class="map-container">
-        <img src="/static/subway_map.png" class="map" alt="NYC Subway Map">
-        {% for train_id, pos in trains.items() %}
-            <img 
-                src="/static/train.png"
-                class="train" 
-                id="train-{{ train_id }}"
-                data-train="{{ train_id }}"
-                style="left: {{ pos.x }}px; top: {{ pos.y }}px;"
-                draggable="true"
-            >
-        {% endfor %}
+    <div class="card">
+        <h1>New York Museum Explorer</h1>
+        <form method="post">
+            <label for="museum">Choose a museum:</label>
+            <select name="museum" id="museum">
+                {% for name in museums %}
+                    <option value="{{ name }}">{{ name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Explore</button>
+        </form>
+
+        {% if info %}
+            <hr>
+            <h2>{{ info.title }}</h2>
+            {% if info.thumbnail %}
+                <img src="{{ info.thumbnail }}" alt="Museum image">
+            {% endif %}
+            <p>{{ info.extract }}</p>
+            <a href="{{ info.url }}" target="_blank">Read more on Wikipedia</a>
+        {% endif %}
     </div>
-
-    <script>
-        document.querySelectorAll('.train').forEach(train => {
-            train.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData("train-id", train.dataset.train);
-            });
-        });
-
-        const map = document.querySelector('.map-container');
-        map.addEventListener('dragover', (e) => e.preventDefault());
-        map.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const trainId = e.dataTransfer.getData("train-id");
-            const trainEl = document.querySelector(`#train-${trainId}`);
-            const rect = map.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            trainEl.style.left = `${x}px`;
-            trainEl.style.top = `${y}px`;
-
-            fetch("/update_train_position", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ train_id: trainId, x, y })
-            });
-        });
-    </script>
 </body>
 </html>
