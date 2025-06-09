@@ -3,33 +3,162 @@
 <head>
     <title>NY Museum Explorer</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 2em; background: #f4f4f4; }
-        .card { background: white; padding: 1.5em; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
-        img { max-width: 100%; border-radius: 10px; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('https://media.giphy.com/media/xTiTnxpQ3ghPiB2Hp6/giphy.gif') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+        }
+
+        .overlay {
+            background-color: rgba(0, 0, 0, 0.6);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2em;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #000;
+            padding: 2em;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
+        select, button {
+            padding: 0.5em;
+            margin-top: 1em;
+            font-size: 1em;
+        }
+
+        button {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>New York Museum Explorer</h1>
-        <form method="post">
-            <label for="museum">Choose a museum:</label>
-            <select name="museum" id="museum">
-                {% for name in museums %}
-                    <option value="{{ name }}">{{ name }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit">Explore</button>
-        </form>
+    <div class="overlay">
+        <div class="card">
+            <h1>New York Museum Explorer</h1>
+            <form method="post">
+                <label for="museum">Choose a museum:</label>
+                <select name="museum" id="museum">
+                    {% for name in museums %}
+                        <option value="{{ name }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <button type="submit">Explore</button>
+            </form>
 
-        {% if info %}
-            <hr>
-            <h2>{{ info.title }}</h2>
-            {% if info.thumbnail %}
-                <img src="{{ info.thumbnail }}" alt="Museum image">
+            {% if info %}
+                <hr>
+                <h2>{{ info.title }}</h2>
+                {% if info.thumbnail %}
+                    <img src="{{ info.thumbnail }}" alt="Museum image">
+                {% endif %}
+                <p>{{ info.extract }}</p>
+                <a href="{{ info.url }}" target="_blank">Read more on Wikipedia</a>
             {% endif %}
-            <p>{{ info.extract }}</p>
-            <a href="{{ info.url }}" target="_blank">Read more on Wikipedia</a>
-        {% endif %}
+        </div>
     </div>
+    <script>
+        function changeCardColor() {
+            const card = document.querySelector('.card');
+            const hue = Math.floor(Math.random() * 360);
+            card.style.backgroundColor = `hsl(${hue}, 80%, 90%)`;
+        }
+        
+        function emojiAttack() {
+            const card = document.querySelector('.card');
+            const emojis = ['😜', '🦑', '🪩', '🍕', '🎉', '🤡'];
+            for (let i = 0; i < 10; i++) {
+                const span = document.createElement('span');
+                span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                span.style.position = 'absolute';
+                span.style.left = Math.random() * 80 + '%';
+                span.style.top = Math.random() * 80 + '%';
+                span.style.fontSize = Math.random() * 20 + 20 + 'px';
+                span.style.opacity = 0.8;
+                card.appendChild(span);
+                setTimeout(() => span.remove(), 3000);
+            }
+        }
+        
+        function addFunFact() {
+            const card = document.querySelector('.card');
+            const fact = document.createElement('p');
+            fact.innerHTML = `<strong>💡 Fun Fact:</strong> New York has more museums than squirrels. Maybe.`;
+            fact.style.fontStyle = 'italic';
+            card.appendChild(fact);
+        }
+        </script>
+        
+    <!-- Wikipedia Widget Madness -->
+    <script>
+    function showRandomWidget() {
+        const widget = document.createElement('div');
+        widget.style.position = 'fixed';
+        widget.style.top = Math.floor(Math.random() * 70 + 10) + 'vh';
+        widget.style.right = '10px';
+        widget.style.width = '300px';
+        widget.style.padding = '1em';
+        widget.style.background = '#fff';
+        widget.style.border = '2px solid #222';
+        widget.style.borderRadius = '10px';
+        widget.style.zIndex = 1000;
+        widget.style.boxShadow = '0 0 15px rgba(0,0,0,0.3)';
+        widget.style.fontSize = '14px';
+        widget.innerHTML = '<em>Loading something dumb...</em>';
+
+        document.body.appendChild(widget);
+
+        // Fetch a random Wikipedia article summary
+        fetch('https://en.wikipedia.org/api/rest_v1/page/random/summary')
+            .then(res => res.json())
+            .then(data => {
+                widget.innerHTML = `
+                    <strong>${data.title}</strong><br>
+                    <p>${data.extract}</p>
+                    <a href="${data.content_urls.desktop.page}" target="_blank">Read more</a>
+                `;
+            })
+            .catch(() => {
+                widget.innerHTML = '<strong>Error loading dumb stuff.</strong>';
+            });
+
+        // Remove the widget after 90 sec
+        setTimeout(() => widget.remove(), 90000);
+    }
+
+    // Schedule widgets every 5–10 minutes
+    function startWidgetMadness() {
+        const nextInterval = Math.random() * 5 * 60 * 1000 + 5 * 60 * 1000;
+        setTimeout(() => {
+            showRandomWidget();
+            startWidgetMadness();
+        }, nextInterval);
+    }
+
+    startWidgetMadness();
+    </script>
 </body>
 </html>
+<!-- 🎛️ Dumb Controls Panel -->
+<div id="left-panel">
+    <h4>🧪 Dumb Controls</h4>
+    <button onclick="changeCardColor()">🎨 Color</button>
+    <button onclick="emojiAttack()">🐵 Emoji</button>
+    <button onclick="addFunFact()">🤯 Fun Fact</button>
+</div>
