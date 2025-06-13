@@ -154,8 +154,17 @@
     <em>Drag a unit here to deploy!</em>
   </div>
   <div id="cards"></div>
+  <div id="scoreboard">
+    🏆 Wins: <span id="wins">0</span> |
+    💥 Losses: <span id="losses">0</span> |
+    🤝 Ties: <span id="ties">0</span>
+  </div>
   <div id="game-log"></div>
 </div>
+
+<audio id="win-sfx" src="{{ url_for('static', filename='sounds/fanfare.mp3') }}"></audio>
+<audio id="lose-sfx" src="{{ url_for('static', filename='sounds/fail.mp3') }}"></audio>
+<audio id="tie-sfx" src="{{ url_for('static', filename='sounds/shrug.mp3') }}"></audio>
 
 <div class="overlay">
   <div class="card" id="museum-card">
@@ -184,34 +193,27 @@
 </div>
 
 <script>
-function changeCardColor() {
-  const card = document.getElementById("museum-card");
-  const hue = Math.floor(Math.random() * 360);
-  card.style.backgroundColor = `hsl(${hue}, 80%, 90%)`;
+let score = { wins: 0, losses: 0, ties: 0 };
+
+function playSFX(id) {
+  const sfx = document.getElementById(id);
+  if (sfx) sfx.play();
 }
 
-function emojiAttack() {
-  const card = document.getElementById("museum-card");
-  const emojis = ['😜', '🦑', '🪩', '🍕', '🎉', '🤡'];
-  for (let i = 0; i < 10; i++) {
-    const span = document.createElement('span');
-    span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-    span.style.position = 'absolute';
-    span.style.left = Math.random() * 80 + '%';
-    span.style.top = Math.random() * 80 + '%';
-    span.style.fontSize = Math.random() * 20 + 20 + 'px';
-    span.style.opacity = 0.8;
-    card.appendChild(span);
-    setTimeout(() => span.remove(), 3000);
+function updateScore(result) {
+  if (result === 'win') {
+    score.wins++;
+    document.getElementById('wins').textContent = score.wins;
+    playSFX('win-sfx');
+  } else if (result === 'loss') {
+    score.losses++;
+    document.getElementById('losses').textContent = score.losses;
+    playSFX('lose-sfx');
+  } else if (result === 'tie') {
+    score.ties++;
+    document.getElementById('ties').textContent = score.ties;
+    playSFX('tie-sfx');
   }
-}
-
-function addFunFact() {
-  const card = document.getElementById("museum-card");
-  const fact = document.createElement('p');
-  fact.innerHTML = `<strong>💡 Fun Fact:</strong> New York has more museums than squirrels. Maybe.`;
-  fact.style.fontStyle = 'italic';
-  card.appendChild(fact);
 }
 
 const unitDeck = [
@@ -220,7 +222,13 @@ const unitDeck = [
   { name: "🧹 Subway Rat", power: 5 },
   { name: "🥯 Bagel Boss", power: 4 },
   { name: "🕊️ Pigeon Swarm", power: 3 },
-  { name: "🕶️ Hipster", power: 2 }
+  { name: "🕶️ Hipster", power: 2 },
+  { name: "🎷 Jazz Busker", power: 5 },
+  { name: "🍎 Big Apple", power: 7 },
+  { name: "🦞 Bronx Lobster", power: 6 },
+  { name: "🧤 Yankee Fan", power: 4 },
+  { name: "🌭 Hot Dog Vendor", power: 3 },
+  { name: "👞 Wall Street Tycoon", power: 9 }
 ];
 
 const enemyDeck = [
@@ -247,10 +255,13 @@ function onDrop(ev) {
 
   if (player.power > enemy.power) {
     result.innerHTML += " — 🏆 You win!";
+    updateScore('win');
   } else if (player.power < enemy.power) {
     result.innerHTML += " — 💥 You lose!";
+    updateScore('loss');
   } else {
     result.innerHTML += " — 🤝 Tie!";
+    updateScore('tie');
   }
 
   log.appendChild(result);
